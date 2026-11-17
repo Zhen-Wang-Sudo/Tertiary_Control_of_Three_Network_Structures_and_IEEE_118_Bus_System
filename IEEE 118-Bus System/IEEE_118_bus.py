@@ -12,7 +12,7 @@ b_vec = np.loadtxt('branch_susceptance_vector.csv', delimiter=',')      # (186,)
 M_mat = np.loadtxt('M_diag_matrix.csv', delimiter=',')                      # (118,)
 D_mat = np.loadtxt('D_diag_matrix.csv', delimiter=',')                      # (118,)
 gen_limits = np.loadtxt('gen_pmax_limits.csv', delimiter=',')          # generator data
-load_data  = np.loadtxt('load_15min_demand_7.csv', delimiter=',')        # load data
+load_data  = np.loadtxt('load_15min_demand_8.csv', delimiter=',')        # load data
 
 p_max_pu = gen_limits[:, 3]
 n_bus, n_lines = B_inc.shape
@@ -165,7 +165,7 @@ A = B_inc.T @ (U1 * inv_eigvals) @ U_s
 noise_intensity = np.zeros(n_bus)
 np.random.seed(42)
 # 1. generator side; disturbance set as large due to renewable sources
-sigma_gen_base = 0.15 * 10 
+sigma_gen_base = 0.18 * 10 
 # 2. generator side; disturbance set as small due to randomness of customers
 sigma_load_base = 0.03 * 10
 # browse all the nodes, assign different strength according to the category
@@ -433,8 +433,8 @@ slack_ineq_constraint = LinearConstraint(A_ineq, lb=lb, ub=ub)
 
 res = minimize(
     fun = diff_con_obj,  
-    # x0 = P_s_red,
-    x0 = P_s_pc_array[:-1],
+    x0 = P_s_red,
+    # x0 = P_s_pc_array[:-1],
     method='trust-constr',
     hess=SR1(),
     jac=True,
@@ -543,6 +543,10 @@ def compare_exit_prob(P_s_1, P_s):
     degree = np.asin(A@P_s +b)
     control_objective_function = abs(degree) + 3.08 * standard_deviation   
     idx_seq = sequential_output_obj(P_s_1)[1]
+    standard_deviation = standard_deviation[idx_seq]
+    degree = degree[idx_seq]
+    control_objective_function = control_objective_function[idx_seq]
+    line_number_list = []
     line_number_list = []
     for i in range(10):
         indices = np.nonzero(B_inc[:,idx_seq[i]])[0].tolist()
@@ -560,8 +564,8 @@ def compare_exit_prob(P_s_1, P_s):
     return idx_seq, line_number_list, degree_P_C[:10], degree[:10], standard_deviation_P_C[:10], standard_deviation[:10], P_a_P_C[:10],P_a_P_S_C[:10],P_b_P_C[:10],P_b_P_S_C[:10]
 print(compare_exit_prob(P_s_pc_array[:-1], optimal_p_red))     
 
-print(sequential_output_obj(P_s_pc_array[:-1])[0], sequential_output_obj(P_s_pc_array[:-1])[4][0],sequential_output_obj(P_s_pc_array[:-1])[5][0])
-print(sequential_output_obj(optimal_p_red)[0], sequential_output_obj(optimal_p_red)[4][0], sequential_output_obj(optimal_p_red)[5][0])
+# print(sequential_output_obj(P_s_pc_array[:-1])[0], sequential_output_obj(P_s_pc_array[:-1])[4][0],sequential_output_obj(P_s_pc_array[:-1])[5][0])
+# print(sequential_output_obj(optimal_p_red)[0], sequential_output_obj(optimal_p_red)[4][0], sequential_output_obj(optimal_p_red)[5][0])
 
 r_epsilon = (-np.pi/2 + sequential_output_obj(P_s_pc_array[:-1])[0])/sequential_output_obj(P_s_pc_array[:-1])[5][0] -3.08
 r_new_epsilon = (-np.pi/2 + sequential_output_obj(optimal_p_red)[0])/sequential_output_obj(optimal_p_red)[5][0]-3.08
