@@ -51,9 +51,9 @@ P_initial = np.array([10,10,10])
 P_upper = np.array([30,20,25,20])
 P_lower = np.zeros(4)
 
-P_d = 40 * np.random.dirichlet(np.ones(8))
+P_d = 48 * np.random.dirichlet(np.ones(8))
 while np.any(P_d > 20):
-  P_d = 40 * np.random.dirichlet(np.ones(8))
+  P_d = 48 * np.random.dirichlet(np.ones(8))
 
 M_inv_sqrt_sparse =sparse.diags(M ** (-0.5),offsets=0, format='csr')
 M_inv_sparse =sparse.diags(M ** (-1),offsets=0, format='csr')
@@ -328,6 +328,7 @@ def sequential_output_obj(P_s):
     control_objective_function = abs(degree) + 3.08 * standard_deviation
     max_val = np.max(control_objective_function)
     idx_seq = np.argsort(control_objective_function)[-n_lines:][::-1]
+    
     line_number_list = []
     for i in range(n_lines):
         indices = np.nonzero(B_inc[:,idx_seq[i]])[0]
@@ -363,6 +364,10 @@ def compare_exit_prob(P_s_1, P_s):
     degree = np.asin(A@P_s +b)
     control_objective_function = abs(degree) + 3.08 * standard_deviation
     idx_seq = sequential_output_obj(P_s_1)[1]
+    standard_deviation = standard_deviation[idx_seq]
+    degree = degree[idx_seq]
+    control_objective_function = control_objective_function[idx_seq]
+    line_number_list = []
     line_number_list = []
     for i in range(n_lines):
         indices = np.nonzero(B_inc[:,idx_seq[i]])[0]
